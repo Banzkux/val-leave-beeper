@@ -1,0 +1,5 @@
+.venv/
+.vscode/
+__pycache__/
+language-server-log.txt
+settings.json
