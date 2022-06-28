@@ -18,7 +18,7 @@ def detection_loop(settings:Type[Settings]):
     print("Pressing escape when \"Game feed\"", 
             "window is focused quits back to main menu.")
     begin_time = time()
-    templImg = cv2.imread(os.path.join(dirname, 'images/templateimage.png'), 0)
+    templImg = cv2.imread(os.path.join(dirname, 'data/templateimage.png'), 0)
     stream = VirtualCameraFeed(settings.device_index)
     stream.start()
     frame = Crop(stream.read(), settings.cropping)
