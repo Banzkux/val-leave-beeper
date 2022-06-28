@@ -60,6 +60,7 @@ class Settings:
                     "(current:{} sec)".format(self.capture_delay))
             print("4: Set Valentin leave timing adjustment", 
         "(- = earlier, + = later) (current:{} sec)".format(self.adjustment))
+            print("5: Set max fps (current: {})".format(self.max_fps))
             print("0: Main menu")
             try:
                     selection = int(input("Select action: "))
@@ -81,6 +82,14 @@ class Settings:
                     self.adjustment = float(input("Adjustment (current: {}): "
                     .format(self.adjustment)))
                     self.adjustment = np.clip(self.adjustment, -2, 2)
+                except:
+                    print("Invalid input. Previous value kept.")
+            elif selection == 5:
+                try:
+                    self.max_fps = float(input("Max fps (current: {}): "
+                    .format(self.max_fps)))
+                    if self.max_fps <= 0:
+                        self.max_fps = float(1)
                 except:
                     print("Invalid input. Previous value kept.")
             elif selection == 0:
