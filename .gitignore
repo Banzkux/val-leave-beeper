@@ -1,5 +1,10 @@
+build/
+dist/
 .venv/
 .vscode/
 __pycache__/
+
+
+*.spec
 language-server-log.txt
 settings.json
