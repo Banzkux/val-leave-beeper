@@ -28,3 +28,14 @@ def DrawFPS(image, fps):
 # get grayscale image
 def get_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+def scale_image(image, scale):
+    width = int(image.shape[1] * scale)
+    height = int(image.shape[0] * scale)
+    dim = (width, height)
+    return cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+
+def change_aspect_ratio(image, aspect):
+    width = int(image.shape[1] + image.shape[1] % aspect[0])
+    height = int(width/aspect[0] * aspect[1])
+    return cv2.resize(image, (width, height), interpolation = cv2.INTER_AREA)

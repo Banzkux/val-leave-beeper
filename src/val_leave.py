@@ -6,7 +6,7 @@ from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
 from winsound import Beep
 from time import time
 from threading import Thread, Event
-from imageprocessing import Crop, DrawFPS, get_grayscale
+from imageprocessing import Crop, DrawFPS, get_grayscale, scale_image, change_aspect_ratio
 from settings import Settings
 from typing import Type
 
@@ -18,10 +18,15 @@ def detection_loop(settings:Type[Settings]):
     print("Pressing escape when \"Game feed\"", 
             "window is focused quits back to main menu.")
     begin_time = time()
-    templImg = cv2.imread(os.path.join(dirname, 'data/templateimage.png'), 0)
+    templImg = cv2.imread(os.path.join(dirname, 'data', settings.template_name), 0)
+    templImg = scale_image(templImg, settings.template_scale)
     stream = VirtualCameraFeed(settings.device_index)
     stream.start()
     frame = Crop(stream.read(), settings.cropping)
+    if settings.aspect_ratio[0] != 4 or settings.aspect_ratio[1] != 3:
+        frame = change_aspect_ratio(frame, settings.aspect_ratio)
+    if settings.video_scale != 1:
+        frame = scale_image(frame, settings.video_scale)
     
     event = Event()
 
@@ -47,8 +52,13 @@ def detection_loop(settings:Type[Settings]):
 
         begin_time = time()
         new_frame = Crop(stream.read(), settings.cropping)
+        # Scaling and aspect ratio
+        if settings.aspect_ratio[0] != 4 or settings.aspect_ratio[1] != 3:
+            new_frame = change_aspect_ratio(new_frame, settings.aspect_ratio)
+        if settings.video_scale != 1:
+            new_frame = scale_image(new_frame, settings.video_scale)
         # Frame same as previous -> go to next iteration of the loop
-        if (frame == new_frame).all():
+        if frame is not None and (frame == new_frame).all():
             continue
         frame = new_frame
         
