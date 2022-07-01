@@ -6,7 +6,8 @@ from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
 from winsound import Beep
 from time import time
 from threading import Thread, Event
-from imageprocessing import Crop, DrawFPS, get_grayscale, scale_image, change_aspect_ratio
+from imageprocessing import Crop, DrawFPS, get_grayscale, scale_image,\
+change_aspect_ratio
 from settings import Settings
 from typing import Type
 
@@ -20,9 +21,10 @@ def detection_loop(settings:Type[Settings]):
     begin_time = time()
     templImg = cv2.imread(os.path.join(dirname, 'data', settings.template_name), 0)
     templImg = scale_image(templImg, settings.template_scale)
-    stream = VirtualCameraFeed(settings.device_index)
+    stream = VirtualCameraFeed(settings.device_index, settings.resolution)
     stream.start()
     frame = Crop(stream.read(), settings.cropping)
+    frame = cv2.resize(frame, (640, 480), interpolation = cv2.INTER_AREA)
     if settings.aspect_ratio[0] != 4 or settings.aspect_ratio[1] != 3:
         frame = change_aspect_ratio(frame, settings.aspect_ratio)
     if settings.video_scale != 1:
@@ -52,6 +54,7 @@ def detection_loop(settings:Type[Settings]):
 
         begin_time = time()
         new_frame = Crop(stream.read(), settings.cropping)
+        new_frame = cv2.resize(new_frame, (640, 480), interpolation = cv2.INTER_AREA)
         # Scaling and aspect ratio
         if settings.aspect_ratio[0] != 4 or settings.aspect_ratio[1] != 3:
             new_frame = change_aspect_ratio(new_frame, settings.aspect_ratio)

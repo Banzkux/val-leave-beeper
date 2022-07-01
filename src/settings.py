@@ -7,6 +7,7 @@ import os
 import sys
 from imageprocessing import Crop, get_grayscale, scale_image, change_aspect_ratio
 from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
+from cropping import Cropping
 
 class Settings:
     def __init__(self):
@@ -21,6 +22,7 @@ class Settings:
         self.template_scale = float(1)
         self.video_scale = float(1)
 
+        self.resolution = [640, 480]
 
         self.dirname = os.path.dirname(sys.argv[0])
         try:
@@ -33,12 +35,7 @@ class Settings:
         self.load()
 
     def crop_video(self):
-        stream = VirtualCameraFeed(self.device_index)
-        stream.start()
-        self.cropping = cv2.selectROI('Cropping window', stream.read(), False)
-        stream.stop()
-        cv2.destroyWindow('Cropping window')
-        print(self.cropping)
+        self.cropping = Cropping(self.device_index, self.resolution).done()
 
     # Device selection
     def device_menu(self):
@@ -70,6 +67,8 @@ class Settings:
             print("5: Set Valentin leave timing adjustment", 
         "(- = earlier, + = later) (current:{} sec)".format(self.adjustment))
             print("6: Set max fps (current: {})".format(self.max_fps))
+            print("7: Set OBS output resolution (current: {}x{})"
+                            .format(self.resolution[0], self.resolution[1]))
             print("0: Main menu")
             try:
                     selection = int(input("Select action: "))
@@ -103,6 +102,15 @@ class Settings:
                         self.max_fps = float(1)
                 except:
                     print("Invalid input. Previous value kept.")
+            elif selection == 7:
+                try:
+                    temp = input("Resolution (current: {}x{}):"
+                    .format(self.resolution[0], self.resolution[1])).split("x")
+                    if len(temp) != 2:
+                        raise
+                    self.resolution = [int(i) for i in temp]
+                except:
+                    print("Invalid input. Previous value kept.")
             elif selection == 0:
                 self.save()
                 break
@@ -112,7 +120,8 @@ class Settings:
     def load(self):
         valid_keys = ["adjustment", "capture_delay",
                          "cropping", "device_index", "max_fps", "aspect_ratio",
-                         "template_name", "template_scale", "video_scale"]
+                         "template_name", "template_scale", "video_scale",
+                         "resolution"]
         try:
             with open(os.path.join(self.dirname, "settings.json"), "r") as json_file:
                 data = json.load(json_file)
@@ -134,13 +143,15 @@ class Settings:
             json.dump(dict, outfile, indent=4)
 
     def scale_calibration(self):
-        stream = VirtualCameraFeed(self.device_index)
+        stream = VirtualCameraFeed(self.device_index, self.resolution)
         stream.start()
         frame = Crop(stream.read(), self.cropping)
         print("Press space once Valentin says the last line", 
             "(scale calibration window needs to be focused).")
         while True:
             frame = Crop(stream.read(), self.cropping)
+            frame = cv2.resize(
+                            frame, (640, 480), interpolation = cv2.INTER_AREA)
             cv2.imshow("Scale calibration window", frame)
             k = cv2.waitKey(1)
             if k == 32:

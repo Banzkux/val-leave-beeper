@@ -3,8 +3,8 @@ import numpy as np
 
 def Crop(image, cropping):
     if np.any(cropping):
-        return image[int(cropping[1]):int(cropping[1]+cropping[3]), 
-                    int(cropping[0]):int(cropping[0]+cropping[2])]
+        return image[int(cropping[1]):int(cropping[3]),
+                    int(cropping[0]):int(cropping[2])]
     else:
         return image
 

@@ -3,10 +3,12 @@ from threading import Thread
 import cv2
 
 class VirtualCameraFeed:
-	def __init__(self, src=0, name="VirtualCameraFeed"):
+	def __init__(self, src=0, resolution=[640,480], name="VirtualCameraFeed"):
 		# initialize the virtual camera feed and read the first frame
 		# from the stream
 		self.stream = cv2.VideoCapture(src)
+		self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
+		self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
 		(self.grabbed, self.frame) = self.stream.read()
 
 		# initialize the thread name
