@@ -18,7 +18,7 @@ class Settings:
         self.max_fps = float(29.97)
         # Scale calibration variables
         self.aspect_ratio = [4, 3]
-        self.template_name = "templateimage.png"
+        self.template_name = "templateimagefrom4by3.png"
         self.template_scale = float(1)
         self.video_scale = float(1)
 
