@@ -58,8 +58,12 @@ class Settings:
     def menu(self):
         while True:
             print("\n\n")
-            print("1: Select video device (current: {} {})".format(
-                self.device_index, self.device_list[self.device_index]))
+            try:
+                print("1: Select video device (current: {} {})".format(
+                    self.device_index, self.device_list[self.device_index]))
+            except:
+                print("1: Select video device (current: {} {})".format(
+                    self.device_index, "Unavailable"))
             print("2: Crop video feed (Cancelling the process = no cropping)")
             print("3: Calibrate template scale")
             print("4: Set delay between video feed vs CRT/Monitor", 
