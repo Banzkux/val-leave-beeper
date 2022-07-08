@@ -16,8 +16,6 @@ from typing import Type
 def detection_loop(settings:Type[Settings]):
     dirname = os.path.dirname(sys.argv[0])
     cv2.namedWindow("Game feed")
-    print("Pressing escape when \"Game feed\"", 
-            "window is focused quits back to main menu.")
     begin_time = time()
     templImg = cv2.imread(os.path.join(dirname, 'data', settings.template_name), 0)
     templImg = scale_image(templImg, settings.template_scale)
@@ -32,11 +30,13 @@ def detection_loop(settings:Type[Settings]):
     
     event = Event()
 
+    cv2.namedWindow("Game feed")
+
     # Time when last dialog was detected last time
     # this is for the cooldown thing
     detected = 0
     valLeaveCount = 0
-    while True:
+    while cv2.getWindowProperty("Game feed", cv2.WND_PROP_VISIBLE) > 0:
         # Frame rate calculations, waits if exceeding max fps
         try:
             new_time = time()
@@ -88,15 +88,15 @@ def detection_loop(settings:Type[Settings]):
 
         frame = DrawFPS(frame, str(round(fps, 2)))
         cv2.imshow("Game feed", frame)
-        
+
         k = cv2.waitKey(1)
         if k%256 == 27:
             # ESC pressed
             print("Escape hit, closing...")
+            cv2.destroyWindow("Game feed")
             break
 
     stream.stop()
-    cv2.destroyWindow('Game feed')
 
 # This is ran on separate thread
 def ValLeaveBeep(event, settings:Type[Settings]):

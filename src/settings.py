@@ -147,23 +147,59 @@ class Settings:
             json.dump(dict, outfile, indent=4)
 
     def scale_calibration(self):
+        frame = self.scale_calibration_frame()
+
+        if len(frame) == 0:
+            print("No frame selected. Quitting calibration...")
+            return
+
+        result = self.scale_calibration_compare(frame)
+        (maxVal, template_scale, video_scale, t_name, aspect) = result
+
+        if maxVal < 0.8:
+            print("Make sure that the comparison frame has the last text visible.")
+            print("Result was too poor. Anything below 0.8 wont work at all.", 
+                    "For best performance 0.9+ result is needed.")
+        
+        self.scale_calibration_preview(frame, aspect)
+
+        # Result too poor, don't change settings
+        if maxVal < 0.8:
+            return
+
+        # Keep the settings from calibration
+        self.aspect_ratio = aspect
+        self.template_name = t_name
+        self.template_scale = template_scale
+        self.video_scale = video_scale
+        
+
+    def scale_calibration_frame(self):
         stream = VirtualCameraFeed(self.device_index, self.resolution)
         stream.start()
         frame = Crop(stream.read(), self.cropping)
         print("Press space once Valentin says the last line", 
             "(scale calibration window needs to be focused).")
-        while True:
+        
+        window_name = "Scale calibration window"
+        cv2.namedWindow(window_name)
+        selected_frame = []
+        while cv2.getWindowProperty(window_name , cv2.WND_PROP_VISIBLE) > 0:
             frame = Crop(stream.read(), self.cropping)
             frame = cv2.resize(
                             frame, (640, 480), interpolation = cv2.INTER_AREA)
-            cv2.imshow("Scale calibration window", frame)
+            cv2.imshow(window_name, frame)
             k = cv2.waitKey(1)
             if k == 32:
-                cv2.destroyWindow("Scale calibration window")
+                selected_frame = get_grayscale(frame)
+                cv2.destroyWindow(window_name)
                 print("Space pressed, starting calibration...")
                 break
-        frame = get_grayscale(frame)
+        
+        stream.stop()
+        return selected_frame
 
+    def scale_calibration_compare(self, frame):
         dirname = os.path.dirname(sys.argv[0])
 
         # Adds all templateimages from data folder
@@ -184,34 +220,28 @@ class Settings:
                                                     resized, templates, True)
             if found is None or maxVal > found[0]:
                 found = (maxVal, scale, vscale, t_name, aspect)
-            print("Matching:", maxVal, "Resized to {}:{} {}"
-                                        .format(aspect[0], aspect[1], t_name))
             # Scaling image in comparison
             (maxVal, scale, vscale, t_name) = self.scaling_comparison(
                                                     resized, templates, False)
             if found is None or maxVal > found[0]:
                 found = (maxVal, scale, vscale, t_name, aspect)
-            print("Matching:", maxVal, "Resized to {}:{} (image scaled) {}"
-                                    .format(aspect[0], aspect[1], t_name))
             i += 1
             print("{} of {} done.".format(i, len(common_aspect)))
 
         print("Best result:", found)
-        (maxVal, template_scale, video_scale, t_name, aspect) = found
+        return found
+        
+    def scale_calibration_preview(self, frame, aspect):
         resizedFrame = change_aspect_ratio(frame, aspect)
-        print("Press space to continue (Comparison frame window focused)")
-        while True:
-            cv2.imshow("Comparison frame", resizedFrame)
+        window_name = "Comparison frame"
+        cv2.namedWindow(window_name)
+        while cv2.getWindowProperty(window_name , cv2.WND_PROP_VISIBLE) > 0:
+            cv2.imshow(window_name, resizedFrame)
             k = cv2.waitKey(0)
-            if k == 32:
-                print("Space pressed, closing...")
+            if k != -1:
+                cv2.destroyWindow(window_name)
                 break
-        cv2.destroyAllWindows()
-        self.aspect_ratio = aspect
-        self.template_name = t_name
-        self.template_scale = template_scale
-        self.video_scale = video_scale
-        stream.stop()
+        
     
     # Scales image or template down, matches with template and loops
     # best result is kept
