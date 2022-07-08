@@ -116,10 +116,12 @@ class Settings:
                 except:
                     print("Invalid input. Previous value kept.")
             elif selection == 0:
-                self.save()
                 break
             else:
                 print("Invalid input.")
+            # Save between selections
+            if selection in range(1, 7):
+                self.save()
 
     def load(self):
         valid_keys = ["adjustment", "capture_delay",
