@@ -62,12 +62,12 @@ class Settings:
             except:
                 print("1: Select video device (current: {} {})".format(
                     self.device_index, "Unavailable"))
-            print("2: Crop video feed (Cancelling the process = no cropping)")
+            print("2: Crop video feed")
             print("3: Calibrate template scale")
             print("4: Set delay between video feed vs CRT/Monitor", 
                     "(current:{} sec)".format(self.capture_delay))
             print("5: Set Valentin leave timing adjustment", 
-        "(- = earlier, + = later) (current:{} sec)".format(self.adjustment))
+        "(current:{} sec)".format(self.adjustment))
             print("6: Set max fps (current: {})".format(self.max_fps))
             print("0: Main menu")
             try:
@@ -89,8 +89,8 @@ class Settings:
                     print("Invalid input. Previous value kept.")
             elif selection == 5:
                 try:
-                    self.adjustment = float(input("Adjustment (current: {}): "
-                    .format(self.adjustment)))
+                    self.adjustment = float(input("Adjustment (- = earlier, " +
+                        "+ = later) (current: {}): ".format(self.adjustment)))
                     self.adjustment = np.clip(self.adjustment, -2, 2)
                 except:
                     print("Invalid input. Previous value kept.")
