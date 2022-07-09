@@ -11,6 +11,11 @@ class Cropping:
         self.stream.start()
         self.scale = 1
         self.image = self.stream.read()
+
+        # Mouse button held
+        self.l_button = False
+        self.r_button = False
+
         if np.any(cropping):
             self.p1 = [self.cropping[0], self.cropping[1]]
             self.p2 = [self.cropping[2], self.cropping[3]]
@@ -35,7 +40,7 @@ class Cropping:
             if self.p1 != [-1, -1] and self.p2 != [-1, -1]:
                 self.image = cv2.rectangle(self.image, 
 self.convert_position(self.p1), self.convert_position(self.p2),
-                (0,0,255), 1)
+                (0,0,255), 2)
 
             cv2.imshow(self.window_name, self.image)
 
@@ -81,10 +86,25 @@ self.convert_position(self.p1), self.convert_position(self.p2),
         self.stream.stop()
 
     def mouse_callback(self, action, x, y, flags, *userdata):
+        max_width = self.stream.stream.get(cv2.CAP_PROP_FRAME_WIDTH)
+        max_height = self.stream.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        # Keep x and y inside the window
+        x = max(min(max_width * self.scale, x), 0)
+        y = max(min(max_height * self.scale, y), 0)
         if action == cv2.EVENT_LBUTTONDOWN:
-            self.p1 = [int(x/self.scale), int(y/self.scale)]
+            self.l_button = True
+        elif action == cv2.EVENT_LBUTTONUP:
+            self.l_button = False
         elif action == cv2.EVENT_RBUTTONDOWN:
-            self.p2 = [int(x/self.scale), int(y/self.scale)]
+            self.r_button = True
+        elif action == cv2.EVENT_RBUTTONUP:
+            self.r_button = False
+        elif action == cv2.EVENT_MOUSEMOVE:
+            if self.l_button:
+                self.p1 = [int(x/self.scale), int(y/self.scale)]
+            if self.r_button:
+                self.p2 = [int(x/self.scale), int(y/self.scale)]
+
     def convert_position(self, position):
         return [int(i * self.scale) for i in position]
     def done(self):
