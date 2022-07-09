@@ -1,21 +1,26 @@
 import cv2
+import numpy as np
 from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
 from imageprocessing import scale_image, Crop
 
 class Cropping:
-    def __init__(self, device_index, resolution):
-        self.cropping = [0, 0, 0, 0]
+    def __init__(self, device_index, cropping):
+        self.cropping = cropping
         self.window_name = "Cropping window"
-        self.stream = VirtualCameraFeed(device_index, resolution)
+        self.stream = VirtualCameraFeed(device_index)
         self.stream.start()
         self.scale = 1
         self.image = self.stream.read()
-        self.p1 = [-1, -1]
-        self.p2 = [-1, -1]
+        if np.any(cropping):
+            self.p1 = [self.cropping[0], self.cropping[1]]
+            self.p2 = [self.cropping[2], self.cropping[3]]
+        else:
+            self.p1 = [-1, -1]
+            self.p2 = [-1, -1]
         print("Pick two points for your cropping area.",
                 "Left click for p1, right click for p2.")
         print("Press space to confirm selection,",
-            "Press Esc or C for no cropping. - and + resizes the window.")
+            "Press R to reset the cropping selection. - and + resizes the window.")
         cv2.namedWindow(self.window_name)
         cv2.setMouseCallback(self.window_name, self.mouse_callback)
         
@@ -42,24 +47,22 @@ self.convert_position(self.p1), self.convert_position(self.p2),
             elif c == 45:
                 self.scale -= 0.25
                 self.scale = max(0.25, self.scale)
+            # Space pressed
             elif c == 32:
                 cv2.destroyWindow(self.window_name)
                 break
-            elif c == 27 or c == 99:
+            elif c == 114:
                 # Cancel selections
                 self.p1 = [-1, -1]
                 self.p2 = [-1, -1]
-                print("No cropping selected.")
-                cv2.destroyWindow(self.window_name)
-                break
 
-        
-        #self.cropping = cv2.selectROI(self.window_name, self.image, False)
-
+        # Gets top left and bottom right corners
         tl = [min(self.p1[0], self.p2[0]), min(self.p1[1], self.p2[1])]
         br = [max(self.p1[0], self.p2[0]), max(self.p1[1], self.p2[1])]
         if self.p1 != [-1, -1] and self.p2 != [-1, -1]:
             self.cropping = tl + br
+        else:
+            self.cropping = [0, 0, 0, 0]
         
         window_name = self.window_name + " preview"
         cv2.namedWindow(window_name)

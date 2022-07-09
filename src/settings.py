@@ -22,8 +22,6 @@ class Settings:
         self.template_scale = float(1)
         self.video_scale = float(1)
 
-        self.resolution = [640, 480]
-
         self.dirname = os.path.dirname(sys.argv[0])
         try:
             self.device_list = device.getDeviceList()
@@ -35,7 +33,7 @@ class Settings:
         self.load()
 
     def crop_video(self):
-        self.cropping = Cropping(self.device_index, self.resolution).done()
+        self.cropping = Cropping(self.device_index, self.cropping).done()
 
     # Device selection
     def device_menu(self):
@@ -71,8 +69,6 @@ class Settings:
             print("5: Set Valentin leave timing adjustment", 
         "(- = earlier, + = later) (current:{} sec)".format(self.adjustment))
             print("6: Set max fps (current: {})".format(self.max_fps))
-            print("7: Set OBS output resolution (current: {}x{})"
-                            .format(self.resolution[0], self.resolution[1]))
             print("0: Main menu")
             try:
                     selection = int(input("Select action: "))
@@ -106,15 +102,6 @@ class Settings:
                         self.max_fps = float(1)
                 except:
                     print("Invalid input. Previous value kept.")
-            elif selection == 7:
-                try:
-                    temp = input("Resolution (current: {}x{}):"
-                    .format(self.resolution[0], self.resolution[1])).split("x")
-                    if len(temp) != 2:
-                        raise
-                    self.resolution = [int(i) for i in temp]
-                except:
-                    print("Invalid input. Previous value kept.")
             elif selection == 0:
                 break
             else:
@@ -126,8 +113,7 @@ class Settings:
     def load(self):
         valid_keys = ["adjustment", "capture_delay",
                          "cropping", "device_index", "max_fps", "aspect_ratio",
-                         "template_name", "template_scale", "video_scale",
-                         "resolution"]
+                         "template_name", "template_scale", "video_scale"]
         try:
             with open(os.path.join(self.dirname, "settings.json"), "r") as json_file:
                 data = json.load(json_file)
@@ -160,8 +146,8 @@ class Settings:
 
         if maxVal < 0.8:
             print("Make sure that the comparison frame has the last text visible.")
-            print("Result was too poor. Anything below 0.8 wont work at all.", 
-                    "For best performance 0.9+ result is needed.")
+            print("Result was too poor. Anything below 0.8 won't work at all.", 
+                    "For best performance result of 0.9+ is needed.")
         
         self.scale_calibration_preview(frame, aspect)
 
@@ -177,7 +163,7 @@ class Settings:
         
 
     def scale_calibration_frame(self):
-        stream = VirtualCameraFeed(self.device_index, self.resolution)
+        stream = VirtualCameraFeed(self.device_index)
         stream.start()
         frame = Crop(stream.read(), self.cropping)
         print("Press space once Valentin says the last line", 

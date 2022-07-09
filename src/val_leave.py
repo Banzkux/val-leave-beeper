@@ -19,7 +19,7 @@ def detection_loop(settings:Type[Settings]):
     begin_time = time()
     templImg = cv2.imread(os.path.join(dirname, 'data', settings.template_name), 0)
     templImg = scale_image(templImg, settings.template_scale)
-    stream = VirtualCameraFeed(settings.device_index, settings.resolution)
+    stream = VirtualCameraFeed(settings.device_index)
     stream.start()
     frame = Crop(stream.read(), settings.cropping)
     frame = cv2.resize(frame, (640, 480), interpolation = cv2.INTER_AREA)
