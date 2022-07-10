@@ -25,7 +25,6 @@ def DrawFPS(image, fps):
     lineType)
     return image
 
-# get grayscale image
 def get_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -39,3 +38,10 @@ def change_aspect_ratio(image, aspect):
     width = int(image.shape[1] + image.shape[1] % aspect[0])
     height = int(width/aspect[0] * aspect[1])
     return cv2.resize(image, (width, height), interpolation = cv2.INTER_AREA)
+
+def match_template(image, template):
+    img_gray = get_grayscale(image)
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    loc = np.where(res >= threshold)
+    return loc

@@ -1,6 +1,6 @@
 import cv2
 from settings import Settings
-from val_leave import detection_loop
+from play import Play
 
 def main():
     s = Settings()
@@ -15,7 +15,7 @@ def main():
             print("Invalid input.")
             continue
         if selection == 1:
-            detection_loop(s)
+            Play(s).play()
         elif selection == 2:
             s.menu()
         elif selection == 0:
