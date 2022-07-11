@@ -107,9 +107,7 @@ class Settings:
                 self.save()
 
     def load(self):
-        valid_keys = ["adjustment", "capture_delay",
-                         "cropping", "device_index", "max_fps", "aspect_ratio",
-                         "template_name", "template_scale", "video_scale"]
+        valid_keys = self.get_valid_keys()
         try:
             with open(os.path.join(self.dirname, "settings.json"), "r") as json_file:
                 data = json.load(json_file)
@@ -122,13 +120,22 @@ class Settings:
             self.save()
 
     def save(self):
-        ignore_keys = ["device_list", "dirname"]
+        valid_keys = self.get_valid_keys()
         with open(os.path.join(self.dirname, "settings.json"), "w") as outfile:
             dict = {}
             for key, value in self.__dict__.items():
-                if key not in ignore_keys:
+                if key in valid_keys:
                     dict.update({key:value})
             json.dump(dict, outfile, indent=4)
+    
+    # Creates list of keys that will be saved/loaded
+    def get_valid_keys(self):
+        ignore_keys = ["device_list", "dirname"]
+        valid_keys = []
+        for key, value in self.__dict__.items():
+            if key not in ignore_keys:
+                valid_keys.append(key)
+        return valid_keys
 
     def scale_calibration(self):
         from scale_calibration import Calibration
