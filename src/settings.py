@@ -4,6 +4,7 @@ import numpy as np
 import os
 import sys
 from cropping import Cropping
+from menus import Menu
 
 class Settings:
     def __init__(self):
@@ -50,61 +51,22 @@ class Settings:
                 continue
         
     def menu(self):
-        while True:
-            print("\n\n")
-            try:
-                print("1: Select video device (current: {} {})".format(
-                    self.device_index, self.device_list[self.device_index]))
-            except:
-                print("1: Select video device (current: {} {})".format(
-                    self.device_index, "Unavailable"))
-            print("2: Crop video feed")
-            print("3: Calibrate template scale")
-            print("4: Set delay between video feed vs CRT/Monitor", 
-                    "(current:{} sec)".format(self.capture_delay))
-            print("5: Set Valentin leave timing adjustment", 
-        "(current:{} sec)".format(self.adjustment))
-            print("6: Set max fps (current: {})".format(self.max_fps))
-            print("0: Main menu")
-            try:
-                    selection = int(input("Select action: "))
-            except:
-                print("Invalid input.")
-                continue
-            if selection == 1:
-                self.device_menu()
-            elif selection == 2:
-                self.crop_video()
-            elif selection == 3:
-                self.scale_calibration()
-            elif selection == 4:
-                try:
-                    self.capture_delay = float(
-            input("Capture delay (current: {}): ".format(self.capture_delay)))
-                except:
-                    print("Invalid input. Previous value kept.")
-            elif selection == 5:
-                try:
-                    self.adjustment = float(input("Adjustment (- = earlier, " +
-                        "+ = later) (current: {}): ".format(self.adjustment)))
-                    self.adjustment = np.clip(self.adjustment, -2, 2)
-                except:
-                    print("Invalid input. Previous value kept.")
-            elif selection == 6:
-                try:
-                    self.max_fps = float(input("Max fps (current: {}): "
-                    .format(self.max_fps)))
-                    if self.max_fps <= 0:
-                        self.max_fps = float(1)
-                except:
-                    print("Invalid input. Previous value kept.")
-            elif selection == 0:
-                break
-            else:
-                print("Invalid input.")
-            # Save between selections
-            if selection in range(1, 7):
-                self.save()
+        menu = Menu("Select action: ", post_selection=lambda: self.save())
+        menu.add("Main menu", lambda: menu.quit())
+        menu.add("Select video device (current: {} {})", lambda: self.device_menu(),
+        lambda: self.device_index, lambda: self.device_list[self.device_index])
+
+        menu.add("Crop video feed", lambda: self.crop_video())
+        menu.add("Calibrate template scale", lambda: self.scale_calibration())
+        menu.add("Set delay between video feed vs CRT/Monitor (current: {} " +
+        "sec)", lambda: self.capture_delay_input(), lambda: self.capture_delay)
+
+        menu.add("Set Valentin leave timing adjustment (current: {} sec)",
+                lambda: self.adjustment_input(), lambda: self.adjustment)
+
+        menu.add("Set max fps (current {})", lambda: self.max_fps_input(),
+                    lambda: self.max_fps)
+        menu.use()
 
     def load(self):
         valid_keys = self.get_valid_keys()
@@ -141,3 +103,27 @@ class Settings:
         from scale_calibration import Calibration
         (self.aspect_ratio, self.template_name, self.template_scale,
                  self.video_scale) = Calibration(self).done()
+
+    def adjustment_input(self):
+        try:
+            self.adjustment = float(input("Adjustment (- = earlier, " +
+                "+ = later) (current: {}): ".format(self.adjustment)))
+            self.adjustment = np.clip(self.adjustment, -2, 2)
+        except:
+            print("Invalid input. Previous value kept.")
+
+    def capture_delay_input(self):
+        try:
+            self.capture_delay = float(
+    input("Capture delay (current: {}): ".format(self.capture_delay)))
+        except:
+            print("Invalid input. Previous value kept.")
+    
+    def max_fps_input(self):
+        try:
+            self.max_fps = float(input("Max fps (current: {}): "
+            .format(self.max_fps)))
+            if self.max_fps <= 0:
+                self.max_fps = float(1)
+        except:
+            print("Invalid input. Previous value kept.")
