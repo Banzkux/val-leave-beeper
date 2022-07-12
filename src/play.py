@@ -15,13 +15,13 @@ class Play:
         self.template = cv2.imread(os.path.join(
             self.settings.dirname, 'data', settings.template_name), 0)
         self.window_name = "Game feed"
-        self.stream = VirtualCameraFeed(settings.device_index)
         self.frame = None
         self.event = Event()
         
 
     def play(self):
         self.template = scale_image(self.template, self.settings.template_scale)
+        self.stream = VirtualCameraFeed(self.settings.device_index)
         self.stream.start()
         cv2.namedWindow(self.window_name)
         previous_time = time()

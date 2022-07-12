@@ -51,20 +51,20 @@ class Settings:
                 continue
         
     def menu(self):
-        menu = Menu("Select action: ", post_selection=lambda: self.save())
-        menu.add("Main menu", lambda: menu.quit())
-        menu.add("Select video device (current: {} {})", lambda: self.device_menu(),
+        menu = Menu("Select action: ", post_selection=self.save)
+        menu.add("Main menu", menu.quit)
+        menu.add("Select video device (current: {} {})", self.device_menu,
         lambda: self.device_index, lambda: self.device_list[self.device_index])
 
-        menu.add("Crop video feed", lambda: self.crop_video())
-        menu.add("Calibrate template scale", lambda: self.scale_calibration())
+        menu.add("Crop video feed", self.crop_video)
+        menu.add("Calibrate template scale", self.scale_calibration)
         menu.add("Set delay between video feed vs CRT/Monitor (current: {} " +
-        "sec)", lambda: self.capture_delay_input(), lambda: self.capture_delay)
+        "sec)", self.capture_delay_input, lambda: self.capture_delay)
 
         menu.add("Set Valentin leave timing adjustment (current: {} sec)",
-                lambda: self.adjustment_input(), lambda: self.adjustment)
+                self.adjustment_input, lambda: self.adjustment)
 
-        menu.add("Set max fps (current {})", lambda: self.max_fps_input(),
+        menu.add("Set max fps (current {})", self.max_fps_input,
                     lambda: self.max_fps)
         menu.use()
 
@@ -100,7 +100,7 @@ class Settings:
         return valid_keys
 
     def scale_calibration(self):
-        from scale_calibration import Calibration
+        from settings.scale_calibration import Calibration
         (self.aspect_ratio, self.template_name, self.template_scale,
                  self.video_scale) = Calibration(self).done()
 
