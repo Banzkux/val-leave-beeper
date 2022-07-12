@@ -3,8 +3,8 @@ import glob
 import numpy as np
 import os
 import sys
-from imageprocessing import Crop, get_grayscale, scale_image, change_aspect_ratio
-from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
+from utils.imageprocessing import Crop, get_grayscale, scale_image, change_aspect_ratio
+from utils import VirtualCameraFeed # Threaded video feed
 from settings import Settings
 from typing import Type
 

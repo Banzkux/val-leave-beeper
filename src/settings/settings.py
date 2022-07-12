@@ -3,8 +3,8 @@ import json
 import numpy as np
 import os
 import sys
-from cropping import Cropping
-from menus import Menu
+from settings.cropping import Cropping
+from utils import Menu
 
 class Settings:
     def __init__(self):

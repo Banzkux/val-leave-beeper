@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
-from imageprocessing import scale_image, Crop
+from utils import VirtualCameraFeed # Threaded video feed
+from utils.imageprocessing import scale_image, Crop
 
 class Cropping:
     def __init__(self, device_index, cropping):

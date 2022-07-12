@@ -1,8 +1,8 @@
 import cv2
 import os
-from imageprocessing import Crop, DrawFPS, scale_image, change_aspect_ratio,\
-match_template
-from virtualcamerafeed import VirtualCameraFeed # Threaded video feed
+from utils.imageprocessing import Crop, DrawFPS, scale_image,\
+    change_aspect_ratio, match_template
+from utils import VirtualCameraFeed # Threaded video feed
 from winsound import Beep
 from time import time
 from threading import Thread, Event

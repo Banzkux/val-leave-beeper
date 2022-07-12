@@ -1,7 +1,6 @@
-import cv2
 from settings import Settings
 from play import Play
-from menus import Menu
+from utils import Menu
 
 def main():
     s = Settings()
