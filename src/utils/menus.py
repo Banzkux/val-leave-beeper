@@ -1,9 +1,10 @@
 class Menu:
-    def __init__(self, input_text, post_selection = None):
+    def __init__(self, input_text, post_selection = None, looping = True):
         self.active = True
         self.entries: list[Menu_Entry] = []
         self.input_text: str = input_text
         self.post_selection = post_selection
+        self.looping = looping
 
     def add(self, text, func = None, *args):
         self.entries.append(Menu_Entry(text, func, args))
@@ -35,6 +36,9 @@ class Menu:
             self.entries[selection].selected()
             if self.post_selection and selection != 0:
                 self.post_selection()
+            
+            if not self.looping:
+                break
         
 
 class Menu_Entry:

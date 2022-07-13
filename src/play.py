@@ -12,15 +12,17 @@ from typing import Type
 class Play:
     def __init__(self, settings:Type[Settings]):
         self.settings = settings
-        self.template = cv2.imread(os.path.join(
-            self.settings.dirname, 'data', settings.template_name), 0)
         self.window_name = "Game feed"
         self.frame = None
         self.event = Event()
         
 
     def play(self):
-        self.template = scale_image(self.template, self.settings.template_scale)
+        self.template = self.settings.templates[self.settings.current_template]
+        path = os.path.join(self.settings.dirname, 'data', self.template.name,
+            self.template.file_name)
+        self.template_img = cv2.imread(path, 0)
+        self.template_img = scale_image(self.template_img, self.template.scale)
         self.stream = VirtualCameraFeed(self.settings.device_index)
         self.stream.start()
         cv2.namedWindow(self.window_name)
@@ -55,10 +57,11 @@ class Play:
             else:
                 self.frame = new_frame
 
-            w, h = self.template.shape[::-1]
-            loc = match_template(self.frame, self.template)
-            # Detected, 15 sec cooldown
-            if loc[0].size > 0 and last_detection + 15 < time():
+            w, h = self.template_img.shape[::-1]
+            loc = match_template(self.frame, self.template_img)
+            # Detected, template specified cooldown
+            if loc[0].size > 0 and \
+            last_detection + self.template.cooldown < time():
                 detection_count += 1
                 print("Detection #{}".format(detection_count))
                 last_detection = time()
@@ -88,14 +91,15 @@ class Play:
         frame = Crop(self.stream.read(), self.settings.cropping)
         frame = cv2.resize(frame, (640, 480), interpolation = cv2.INTER_AREA)
         # Scaling and aspect ratio
-        if self.settings.aspect_ratio[0] != 4 or self.settings.aspect_ratio[1] != 3:
-            frame = change_aspect_ratio(frame, self.settings.aspect_ratio)
-        if self.settings.video_scale != 1:
-            frame = scale_image(frame, self.settings.video_scale)
+        if self.template.aspect_ratio[0] != 4 or self.template.aspect_ratio[1] != 3:
+            frame = change_aspect_ratio(frame, self.template.aspect_ratio)
+        if self.template.video_scale != 1:
+            frame = scale_image(frame, self.template.video_scale)
         return frame
 
     # This is ran on separate thread
     def beep(self):
-        Beep(880, 100)
-        self.event.wait(3.5 - self.settings.capture_delay + self.settings.adjustment)
-        Beep(440, 100)
+        beep_duration = 100
+        Beep(880, beep_duration)
+        self.event.wait(self.template.timer - self.settings.capture_delay - beep_duration/1000)
+        Beep(440, beep_duration)

@@ -6,13 +6,15 @@ import sys
 from utils.imageprocessing import Crop, get_grayscale, scale_image, change_aspect_ratio
 from utils import VirtualCameraFeed # Threaded video feed
 from settings import Settings
+from .template import Template
 from typing import Type
 
 class Calibration:
     def __init__(self, s:Type[Settings]):
-        self.s = s
-        self.settings = (s.aspect_ratio, s.template_name, s.template_scale,
-                             s.video_scale)
+        self.s: Settings = s
+        self.t: Template = s.templates[s.current_template]
+        self.settings = (self.t.aspect_ratio, self.t.file_name, self.t.scale,
+                             self.t.video_scale)
         frame = self.frame()
 
         if len(frame) == 0:
@@ -64,8 +66,8 @@ class Calibration:
 
         # Adds all templateimages from data folder
         templates = []
-        for file in glob.glob(os.path.join(
-                                        dirname, 'data/templateimage*.png')):
+        path = os.path.join(dirname, 'data', self.t.name, 'templateimage*.png')
+        for file in glob.glob(path):
             templates.append((os.path.basename(file), cv2.imread(file, 0)))
 
         # Test aspect ratios
